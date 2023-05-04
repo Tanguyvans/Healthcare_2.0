@@ -106,6 +106,7 @@ approveForMyOrg1() {
     set -x
     bin/peer lifecycle chaincode approveformyorg -o localhost:7050 \
             --ordererTLSHostnameOverride orderer.example.com --tls \
+            --collections-config $PRIVATE_DATA_CONFIG \
             --cafile "$ORDERER_CA" --channelID $CHANNEL_NAME --name ${CC_NAME} --version ${CC_VERSION} \
             --package-id ${PACKAGE_ID} \
             --sequence ${CC_SEQUENCE} ${INIT_REQUIRED} ${CC_END_POLICY} ${CC_COLL_CONFIG} >&log.txt
@@ -122,6 +123,7 @@ approveForMyOrg2() {
     set -x
     bin/peer lifecycle chaincode approveformyorg -o localhost:7050 \
             --ordererTLSHostnameOverride orderer.example.com --tls \
+            --collections-config $PRIVATE_DATA_CONFIG \
             --cafile "$ORDERER_CA" --channelID $CHANNEL_NAME --name ${CC_NAME} --version ${CC_VERSION} \
             --package-id ${PACKAGE_ID} \
             --sequence ${CC_SEQUENCE} ${INIT_REQUIRED} ${CC_END_POLICY} ${CC_COLL_CONFIG} >&log.txt
@@ -154,7 +156,7 @@ checkCommitReadinessOrg1() {
         sleep $DELAY
         infoln "Attempting to check the commit readiness of the chaincode definition on peer0.org1, Retry after $DELAY seconds."
         set -x
-        bin/peer lifecycle chaincode checkcommitreadiness --channelID $CHANNEL_NAME --name ${CC_NAME} --version ${CC_VERSION} --sequence ${CC_SEQUENCE} ${INIT_REQUIRED} ${CC_END_POLICY} ${CC_COLL_CONFIG} --output json >&log.txt
+        bin/peer lifecycle chaincode checkcommitreadiness --collections-config $PRIVATE_DATA_CONFIG --channelID $CHANNEL_NAME --name ${CC_NAME} --version ${CC_VERSION} --sequence ${CC_SEQUENCE} ${INIT_REQUIRED} ${CC_END_POLICY} ${CC_COLL_CONFIG} --output json >&log.txt
         res=$?
         { set +x; } 2>/dev/null
         let rc=0
@@ -184,7 +186,7 @@ checkCommitReadinessOrg2() {
         sleep $DELAY
         infoln "Attempting to check the commit readiness of the chaincode definition on peer0.org2, Retry after $DELAY seconds."
         set -x
-        bin/peer lifecycle chaincode checkcommitreadiness --channelID $CHANNEL_NAME --name ${CC_NAME} --version ${CC_VERSION} --sequence ${CC_SEQUENCE} ${INIT_REQUIRED} ${CC_END_POLICY} ${CC_COLL_CONFIG} --output json >&log.txt
+        bin/peer lifecycle chaincode checkcommitreadiness --collections-config $PRIVATE_DATA_CONFIG --channelID $CHANNEL_NAME --name ${CC_NAME} --version ${CC_VERSION} --sequence ${CC_SEQUENCE} ${INIT_REQUIRED} ${CC_END_POLICY} ${CC_COLL_CONFIG} --output json >&log.txt
         res=$?
         { set +x; } 2>/dev/null
         let rc=0
@@ -205,6 +207,7 @@ commitChaincodeDefinition() {
     set -x
     bin/peer lifecycle chaincode commit -o localhost:7050 \
             --ordererTLSHostnameOverride orderer.example.com --tls \
+            --collections-config $PRIVATE_DATA_CONFIG \
             --cafile "$ORDERER_CA" --channelID $CHANNEL_NAME --name ${CC_NAME} \
             --peerAddresses localhost:7051 --tlsRootCertFiles $PEER0_ORG1_CA \
             --peerAddresses localhost:9051 --tlsRootCertFiles $PEER0_ORG2_CA \
@@ -283,6 +286,17 @@ chaincodeInvoke() {
         --peerAddresses localhost:7051 --tlsRootCertFiles $PEER0_ORG1_CA \
         --peerAddresses localhost:9051 --tlsRootCertFiles $PEER0_ORG2_CA \
         -c '{"function": "InitLedger","Args":[]}'
+
+    export CAPSULE=$(echo -n "{\"key\":\"pcaps\", \"make\":\"Tesla\",\"model\":\"Tesla A1\",\"color\":\"White\",\"owner\":\"pavan\",\"price\":\"10000\"}" | base64 | tr -d \\n)
+    bin/peer chaincode invoke -o localhost:7050 \
+        --ordererTLSHostnameOverride orderer.example.com \
+        --tls $CORE_PEER_TLS_ENABLED \
+        --cafile $ORDERER_CA \
+        -C $CHANNEL_NAME -n ${CC_NAME} \
+        --peerAddresses localhost:7051 --tlsRootCertFiles $PEER0_ORG1_CA \
+        --peerAddresses localhost:9051 --tlsRootCertFiles $PEER0_ORG2_CA \
+        -c '{"function": "CreatePrivateAsset","Args":[]}' \
+        --transient "{\"capsule\":\"$CAPSULE\"}"
 }
 
 
@@ -311,6 +325,5 @@ checkCommitReadinessOrg2 "\"Org1MSP\": true" "\"Org2MSP\": true"
 commitChaincodeDefinition
 queryCommittedOrg1
 queryCommittedOrg2
-# chaincodeInvokeInit
 sleep 5
 chaincodeInvoke
