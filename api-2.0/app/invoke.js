@@ -12,8 +12,6 @@ const invokeTransaction = async (channelName, chaincodeName, fcn, args, username
         logger.debug(util.format('\n============ invoke transaction on channel %s ============\n', channelName));
 
         // load the network configuration
-        // const ccpPath =path.resolve(__dirname, '..', 'config', 'connection-org1.json');
-        // const ccpJSON = fs.readFileSync(ccpPath, 'utf8')
         const ccp = await helper.getCCP(org_name) //JSON.parse(ccpJSON);
 
         // Create a new file system based wallet for managing identities.
@@ -31,17 +29,12 @@ const invokeTransaction = async (channelName, chaincodeName, fcn, args, username
             return;
         }
 
-        
-
         const connectOptions = {
             wallet, identity: username, discovery: { enabled: true, asLocalhost: true },
             eventHandlerOptions: {
                 commitTimeout: 100,
                 strategy: DefaultEventHandlerStrategies.NETWORK_SCOPE_ALLFORTX
             }
-            // transaction: {
-            //     strategy: createTransactionEventhandler()
-            // }
         }
 
         // Create a new gateway for connecting to our peer node.
@@ -62,6 +55,16 @@ const invokeTransaction = async (channelName, chaincodeName, fcn, args, username
         } else if (fcn === "TransferAsset") {
             result = await contract.submitTransaction(fcn, args[0], args[1]);
             message = `Successfully changed car owner with key ${args[0]}`
+        } else if (fcn === "CreatePrivateAsset") {
+            let capsuleData = JSON.parse(transientData)
+            console.log(`car data is : ${JSON.stringify(capsuleData)}`)
+            let key = Object.keys(capsuleData)[0]
+            const transientDataBuffer = {}
+            transientDataBuffer[key] = Buffer.from(JSON.stringify(capsuleData.capsule))
+            result = await contract.createTransaction(fcn)
+                .setTransient(transientDataBuffer)
+                .submit()
+            message = `Successfully submitted transient data`
         }
         else {
             return `Invocation require either CreateAsset or TransferAsset as function but got ${fcn}`

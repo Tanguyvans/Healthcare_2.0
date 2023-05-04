@@ -47,7 +47,6 @@ const getWalletPath = async (org) => {
 
 }
 
-
 const getAffiliation = async (org) => {
     return org == "Org1" ? 'org1.department1' : 'org2.department1'
 }
@@ -140,7 +139,6 @@ const isUserRegistered = async (username, userOrg) => {
     }
     return false
 }
-
 
 const getCaInfo = async (org, ccp) => {
     let caInfo

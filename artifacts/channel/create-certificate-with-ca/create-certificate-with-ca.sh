@@ -1,4 +1,4 @@
-createcertificatesForOrg1() {
+createcertificateForOrg1() {
   echo
   echo "Enroll the CA admin"
   echo
@@ -117,8 +117,6 @@ createcertificatesForOrg1() {
   cp ${PWD}/crypto-config-ca/peerOrganizations/org1.example.com/msp/config.yaml ${PWD}/crypto-config-ca/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/config.yaml
 
 }
-
-# createcertificatesForOrg1
 
 createCertificateForOrg2() {
   echo
@@ -255,9 +253,7 @@ createCertificateForOrg2() {
 
 }
 
-# createCertificateForOrg2
-
-createCretificateForOrderer() {
+createCertificateForOrderer() {
   echo
   echo "Enroll the CA admin"
   echo
@@ -404,8 +400,8 @@ createCretificateForOrderer() {
   mkdir ${PWD}/crypto-config-ca/ordererOrganizations/example.com/orderers/orderer3.example.com/msp/tlscacerts
   cp ${PWD}/crypto-config-ca/ordererOrganizations/example.com/orderers/orderer3.example.com/tls/tlscacerts/* ${PWD}/crypto-config-ca/ordererOrganizations/example.com/orderers/orderer3.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
 
-  # mkdir ${PWD}/crypto-config-ca/ordererOrganizations/example.com/msp/tlscacerts
-  # cp ${PWD}/crypto-config-ca/ordererOrganizations/example.com/orderers/orderer3.example.com/tls/tlscacerts/* ${PWD}/crypto-config-ca/ordererOrganizations/example.com/msp/tlscacerts/tlsca.example.com-cert.pem
+  mkdir ${PWD}/crypto-config-ca/ordererOrganizations/example.com/msp/tlscacerts
+  cp ${PWD}/crypto-config-ca/ordererOrganizations/example.com/orderers/orderer3.example.com/tls/tlscacerts/* ${PWD}/crypto-config-ca/ordererOrganizations/example.com/msp/tlscacerts/tlsca.example.com-cert.pem
 
   # ---------------------------------------------------------------------------
 
@@ -423,11 +419,8 @@ createCretificateForOrderer() {
 
 }
 
-# createCretificateForOrderer
-
 sudo rm -rf crypto-config-ca/*
-# sudo rm -rf fabric-ca/*
-createcertificatesForOrg1
+createcertificateForOrg1
 createCertificateForOrg2
-createCretificateForOrderer
+createCertificateForOrderer
 

@@ -10,10 +10,12 @@
 const stringify  = require('json-stringify-deterministic');
 const sortKeysRecursive  = require('sort-keys-recursive');
 const { Contract } = require('fabric-contract-api');
+const { classToPlain } = require('class-transformer');
 
 class Capsule extends Contract {
 
     async InitLedger(ctx) {
+
         const assets = [
             {
                 ID: "capsule1",
@@ -69,6 +71,29 @@ class Capsule extends Contract {
         // we insert data in alphabetic order using 'json-stringify-deterministic' and 'sort-keys-recursive'
         await ctx.stub.putState(id, Buffer.from(stringify(sortKeysRecursive(asset))));
         return JSON.stringify(asset);
+    }
+
+    async CreatePrivateAsset(ctx) {
+        const collectionName = 'collectionCapsulePrivateDetails';
+        const transientData = await ctx.stub.getTransient();
+
+        if (transientData) {
+            const capsuleData = transientData.get('capsule');
+        
+            // Vérifier si la donnée transitoire "capsule" existe et la traiter si c'est le cas
+            if (capsuleData) {
+                const capsule = JSON.parse(capsuleData.toString());
+            
+                // Ajouter la capsule à la collection de données privées
+                await ctx.stub.putPrivateData(collectionName, capsule.key, Buffer.from(JSON.stringify(capsule)));
+            
+                // Retourner la capsule ajoutée en tant que résultat
+                return capsule;
+            }
+         }
+        
+        // Si aucune donnée transitoire n'a été trouvée, renvoyer une erreur
+        throw new Error('No transient data found');
     }
 
     // ReadAsset returns the asset stored in the world state with given id.
@@ -146,6 +171,7 @@ class Capsule extends Contract {
         }
         return JSON.stringify(allResults);
     }
+
 }
 
 module.exports = Capsule;
